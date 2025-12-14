@@ -1,4 +1,4 @@
-Update to 0.15.0  
+Update to 0.15.3  
 
 # WLED Build For SP530E  
 Prepare UART Converter  

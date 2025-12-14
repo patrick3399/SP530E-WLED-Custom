@@ -3,12 +3,15 @@ name: WLED compile
 on:
     workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -18,36 +21,52 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
+        
     - name: Set up Node.js
       uses: actions/setup-node@v4
+      
     - name: Run PlatformIO
       run: |
         rm -rf /tmp/WLEDtemp/* || true
         mkdir -p /tmp/WLEDtemp
-        wget https://api.github.com/repos/Aircoookie/WLED/zipball/v0.15.0 -O /tmp/WLEDtemp/mm.zip
+        
+        wget https://api.github.com/repos/wled/WLED/zipball/v0.15.3 -O /tmp/WLEDtemp/mm.zip
         unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
         find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
         cd `cat /tmp/WLEDtemp/wledfoldername`
         npm install
+        
         echo '[env:custom_build]' >>platformio.ini
         echo 'extends = env:esp32c3dev' >>platformio.ini
-        echo 'build_flags = ${env:esp32c3dev.build_flags} -D BTNPIN=8 -D ARDUINO_USB_CDC_ON_BOOT=0' >>platformio.ini
         
+        echo 'build_flags = ${env:esp32c3dev.build_flags} -D BTNPIN=8 -D ARDUINO_USB_CDC_ON_BOOT=0' >>platformio.ini
         echo 'build_unflags= -D WLED_RELEASE_NAME' >>platformio.ini
+        
         pio run -e custom_build || pio run -e custom_build
-    - name: Copy Files
+
+    - name: Prepare Binary
       run: |
-        cd $GITHUB_WORKSPACE
-        git rm -r $GITHUB_WORKSPACE/*.bin || true
         WLEDFOLDERNAME=`cat /tmp/WLEDtemp/wledfoldername`
-        cp ${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin $GITHUB_WORKSPACE/
-        date -I | tr -d '\n' >$GITHUB_WORKSPACE/last_update_date.txt
-    - name: Commit Files
-      run: |
-        cd $GITHUB_WORKSPACE
-        git config user.name "GitHub Actions Bot"
-        git config user.email "<>"
-        git add $GITHUB_WORKSPACE/custom_build.bin
-        git add $GITHUB_WORKSPACE/last_update_date.txt
-        git commit -m "Commit Custom Build"
-        git push origin main
+        OUTPUT_FILENAME="WLED_0.15.3_C3_Custom.bin"
+        
+        cp "${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin" "$GITHUB_WORKSPACE/$OUTPUT_FILENAME"
+        
+        echo "FIRMWARE_NAME=$OUTPUT_FILENAME" >> $GITHUB_ENV
+        echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v0.15.3-c3-${{ env.DATE }}
+        name: WLED 0.15.3 C3 Custom (${{ env.DATE }})
+        
+        body: |
+          ### Custom Build Details
+          - **Version:** 0.15.3
+          - **Chip:** ESP32-C3
+          - **Source Branch:** ${{ github.ref_name }}
+          - **Pin:** 8
+          - **USB CDC:** 0
+        
+        files: ${{ github.workspace }}/${{ env.FIRMWARE_NAME }}
+        fail_on_unmatched_files: true

@@ -58,7 +58,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: v0.15.3-c3-${{ env.DATE }}
-        name: WLED 0.15.3 C3 Custom (${{ env.DATE }})
+        name: WLED 0.15.3 for SP530E
         
         body: |
           ### Custom Build Details

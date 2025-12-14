@@ -68,7 +68,6 @@ jobs:
           ### Custom Build Details
           - **Version:** ${{ inputs.wled_version }}
           - **Chip:** ESP32-C3
-          - **Pin:** 8
           - **USB CDC:** 0
         
         files: ${{ github.workspace }}/${{ env.FIRMWARE_NAME }}

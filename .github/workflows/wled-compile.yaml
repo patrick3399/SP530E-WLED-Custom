@@ -1,7 +1,12 @@
 name: WLED compile
 
 on:
-    workflow_dispatch:
+  workflow_dispatch:
+    inputs:
+      wled_version:
+        description: 'WLED Version (e.g. 0.15.3)'
+        required: true
+        default: '0.15.3'
 
 permissions:
   contents: write
@@ -29,8 +34,7 @@ jobs:
       run: |
         rm -rf /tmp/WLEDtemp/* || true
         mkdir -p /tmp/WLEDtemp
-        
-        wget https://api.github.com/repos/wled/WLED/zipball/v0.15.3 -O /tmp/WLEDtemp/mm.zip
+        wget https://api.github.com/repos/wled/WLED/zipball/v${{ inputs.wled_version }} -O /tmp/WLEDtemp/mm.zip
         unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
         find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
         cd `cat /tmp/WLEDtemp/wledfoldername`
@@ -47,7 +51,7 @@ jobs:
     - name: Prepare Binary
       run: |
         WLEDFOLDERNAME=`cat /tmp/WLEDtemp/wledfoldername`
-        OUTPUT_FILENAME="WLED_0.15.3_C3_Custom.bin"
+        OUTPUT_FILENAME="WLED_${{ inputs.wled_version }}_C3_Custom.bin"
         
         cp "${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin" "$GITHUB_WORKSPACE/$OUTPUT_FILENAME"
         
@@ -57,14 +61,13 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v0.15.3-c3-${{ env.DATE }}
-        name: WLED 0.15.3 for SP530E
+        tag_name: v${{ inputs.wled_version }}-c3-${{ env.DATE }}
+        name: WLED ${{ inputs.wled_version }} for SP530E
         
         body: |
           ### Custom Build Details
-          - **Version:** 0.15.3
+          - **Version:** ${{ inputs.wled_version }}
           - **Chip:** ESP32-C3
-          - **Source Branch:** ${{ github.ref_name }}
           - **Pin:** 8
           - **USB CDC:** 0
         

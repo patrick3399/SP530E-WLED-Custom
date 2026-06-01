@@ -86,10 +86,10 @@ jobs:
           - **USB CDC:** 0
 
           ### Files
-          | 檔案 | 用途 |
-          |------|------|
-          | `*_FULL.bin` | 首次刷機（含 bootloader + partitions），使用 esptool 燒錄 |
-          | `*_OTA.bin` | OTA 無線更新，從 WLED 網頁介面上傳 |
+          | File | Purpose |
+          |------|---------|
+          | `*_FULL.bin` | Initial flash (includes bootloader + partitions), flash via esptool |
+          | `*_OTA.bin` | OTA wireless update, upload via WLED web interface |
 
         files: |
           ${{ github.workspace }}/${{ env.FULL_FIRMWARE }}

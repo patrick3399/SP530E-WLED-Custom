@@ -1,55 +1,54 @@
 # WLED Build For SP530E
 
-## Release 檔案說明
+## Release Files
 
-| 檔案 | 用途 |
-|------|------|
-| `WLED_16.x.x_C3_Custom_FULL.bin` | 首次刷機（含 bootloader + partitions），使用 esptool 燒錄 |
-| `WLED_16.x.x_C3_Custom_OTA.bin` | OTA 無線更新，從 WLED 網頁介面上傳 |
+| File | Purpose |
+|------|---------|
+| `WLED_16.x.x_C3_Custom_FULL.bin` | Initial flash (includes bootloader + partition table), flash via esptool |
+| `WLED_16.x.x_C3_Custom_OTA.bin` | OTA wireless update, upload via WLED web interface |
 
 ---
 
-## 首次刷機（FULL）
+## Initial Flash (FULL)
 
-### 準備工具
-- UART Converter
-- Download `WLED_16.x.x_C3_Custom_FULL.bin` at Release page
-- Download ESPtool [Here](https://github.com/espressif/esptool/releases)
+Prepare a UART Converter  
+Download `WLED_16.x.x_C3_Custom_FULL.bin` at the Release page  
+Download ESPtool [Here](https://github.com/espressif/esptool/releases)
 
 > The FULL binary already includes bootloader and partition table.  
 > No need to download them separately.
 
 ### Connect UART Cable to board reverse side
 
-### 備份原廠韌體
+### Backup original firmware
 ```
 esptool read_flash 0 0x400000 sp530e-encrypted.bin
 ```
 
-### 燒錄自訂韌體
-#### Please replace `16.x.x` with the actual version number you downloaded (e.g., `16.0.0`)
+### Flash custom firmware
+#### Replace `16.x.x` with the actual version number you downloaded (e.g., `16.0.0`)
 ```
 esptool write_flash --encrypt 0x0 WLED_16.x.x_C3_Custom_FULL.bin
 ```
 
 ---
 
-## OTA 無線更新
+## OTA Wireless Update
 
-1. Download `WLED_16.x.x_C3_Custom_OTA.bin` at Release page
-2. 連上裝置的 Wi-Fi 或同網段
-3. 開啟瀏覽器進入 WLED 網頁介面
-4. 前往 **Config** → **Security & Updates** → **Manual OTA Update**
-5. 選擇 `*_OTA.bin` 檔案並上傳，等待重啟完成
+1. Download `WLED_16.x.x_C3_Custom_OTA.bin` at the Release page
+2. Connect to the same network as your device
+3. Open the WLED web interface in a browser
+4. Go to **Config** → **Security & Updates** → **Manual OTA Update**
+5. Select the `*_OTA.bin` file, upload, and wait for the device to reboot
 
-> **注意：** 首次使用請先用 FULL 版本完整燒錄，之後才能使用 OTA 更新。
+> **Note:** The FULL binary must be flashed at least once before OTA updates can be used.
 
 ---
 
 ## I/O Pins
 
-| 功能 | GPIO |
-|------|------|
+| Function | GPIO |
+|----------|------|
 | On Board Button | GPIO 8 |
 | On Board Mic | GPIO 3 |
 | On Board Blue LED | GPIO 0 (Inverted) |
@@ -58,8 +57,8 @@ esptool write_flash --encrypt 0x0 WLED_16.x.x_C3_Custom_FULL.bin
 
 ### Analog Pins
 
-| 頻道 | GPIO |
-|------|------|
+| Channel | GPIO |
+|---------|------|
 | R | GPIO 10 |
 | G | GPIO 7 |
 | B | GPIO 6 |

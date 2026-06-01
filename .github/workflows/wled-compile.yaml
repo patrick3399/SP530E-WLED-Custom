@@ -54,18 +54,23 @@ jobs:
       run: |
         WLEDFOLDERNAME=`cat /tmp/WLEDtemp/wledfoldername`
         BUILDDIR="${WLEDFOLDERNAME}/.pio/build/custom_build"
-        OUTPUT_FILENAME="WLED_${{ inputs.wled_version }}_C3_Custom.bin"
+        FULL_FILENAME="WLED_${{ inputs.wled_version }}_C3_Custom_FULL.bin"
+        OTA_FILENAME="WLED_${{ inputs.wled_version }}_C3_Custom_OTA.bin"
         BOOT_APP0=$(find ~/.platformio -name "boot_app0.bin" | head -1)
 
         esptool --chip esp32c3 merge-bin \
           --pad-to-size 4MB \
-          -o "$GITHUB_WORKSPACE/$OUTPUT_FILENAME" \
+          -o "$GITHUB_WORKSPACE/$FULL_FILENAME" \
           0x0     "${BUILDDIR}/bootloader.bin" \
           0x8000  "${BUILDDIR}/partitions.bin" \
           0xe000  "${BOOT_APP0}" \
           0x10000 "${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin"
 
-        echo "FIRMWARE_NAME=$OUTPUT_FILENAME" >> $GITHUB_ENV
+        cp "${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin" \
+           "$GITHUB_WORKSPACE/$OTA_FILENAME"
+
+        echo "FULL_FIRMWARE=$FULL_FILENAME" >> $GITHUB_ENV
+        echo "OTA_FIRMWARE=$OTA_FILENAME" >> $GITHUB_ENV
         echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
     - name: Create Release
@@ -80,5 +85,13 @@ jobs:
           - **Chip:** ESP32-C3
           - **USB CDC:** 0
 
-        files: ${{ github.workspace }}/${{ env.FIRMWARE_NAME }}
+          ### Files
+          | File | Purpose |
+          |------|---------|
+          | `*_FULL.bin` | Initial flash (includes bootloader + partitions), flash via esptool |
+          | `*_OTA.bin` | OTA wireless update, upload via WLED web interface |
+
+        files: |
+          ${{ github.workspace }}/${{ env.FULL_FIRMWARE }}
+          ${{ github.workspace }}/${{ env.OTA_FIRMWARE }}
         fail_on_unmatched_files: true
